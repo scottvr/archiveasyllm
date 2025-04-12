@@ -1,18 +1,19 @@
 """
-Project data model for ArchiveAsyLLM.
+Project data model for ArchiveasyLLM.
 """
 import os
 import json
 import uuid
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+from pathlib import Path
 
 class Project:
     """
     Project data model representing a collection of chats and knowledge.
     """
     
-    data_dir = "./data/projects"
+    data_dir = Path("./data/projects")
     
     def __init__(self, id: str, name: str, description: str = "", 
                  created_at: Optional[datetime] = None,
@@ -52,7 +53,7 @@ class Project:
         project_id = str(uuid.uuid4())
         
         # Create project directory
-        project_dir = os.path.join(cls.data_dir, project_id)
+        project_dir = cls.data_dir / project_id
         os.makedirs(project_dir, exist_ok=True)
         
         # Create project instance
@@ -79,7 +80,7 @@ class Project:
         Returns:
             Project instance or None if not found
         """
-        metadata_file = os.path.join(cls.data_dir, project_id, "metadata.json")
+        metadata_file = cls.data_dir / project_id / "metadata.json"
         
         if not os.path.exists(metadata_file):
             return None
@@ -118,7 +119,7 @@ class Project:
             return projects
         
         for project_id in os.listdir(cls.data_dir):
-            project_dir = os.path.join(cls.data_dir, project_id)
+            project_dir = cls.data_dir / project_id
             
             if not os.path.isdir(project_dir):
                 continue
@@ -160,7 +161,7 @@ class Project:
         """
         import shutil
         
-        project_dir = os.path.join(self.data_dir, self.id)
+        project_dir = self.data_dir / self.id
         
         if os.path.exists(project_dir):
             try:
@@ -173,10 +174,10 @@ class Project:
     
     def _save(self) -> None:
         """Save project metadata to disk."""
-        project_dir = os.path.join(self.data_dir, self.id)
+        project_dir = self.data_dir / self.id
         os.makedirs(project_dir, exist_ok=True)
         
-        metadata_file = os.path.join(project_dir, "metadata.json")
+        metadata_file = project_dir / "metadata.json"
         
         data = {
             'id': self.id,
