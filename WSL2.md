@@ -81,4 +81,4 @@ curl http://localhost:5000/api/v1/projects -H "X-API-Key: dev-api-key"
 
 Test with Python client:
 bashcd clients/python
-python archivist_client.py list-projects
+python archiveasy_client.py list-projects

@@ -1,6 +1,7 @@
 """
 Knowledge extractor module for identifying architectural patterns and decisions in LLM responses.
 """
+# crumb: memory\extractor.py
 from typing import Dict, Any, List, Optional
 import re
 import uuid

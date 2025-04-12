@@ -1,6 +1,7 @@
 """
 Vector database for semantic search of conversation history.
 """
+# crumb: memory\vector.py
 from typing import Dict, Any, List, Optional, Tuple
 import json
 import numpy as np

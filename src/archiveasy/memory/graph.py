@@ -1,6 +1,7 @@
 """
 Knowledge Graph implementation for storing architectural decisions and patterns.
 """
+# crumb: memory\graph.py
 from typing import Dict, Any, List, Optional
 import uuid
 from datetime import datetime

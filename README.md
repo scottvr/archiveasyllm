@@ -52,7 +52,7 @@ cp .env.example .env
 python app.py
 ```
 
-## 📚 Usage
+## Usage
 
 1. **Create a Project**: Start by creating a new project to organize your LLM conversations
 2. **Create a Chat**: Within your project, create a new chat for your conversation
@@ -60,7 +60,7 @@ python app.py
 4. **View Knowledge**: Explore extracted knowledge in the project dashboard
 5. **Observe Consistency**: The system will flag any inconsistencies with previously established patterns
 
-## 🧩 Architecture
+## Architecture
 
 ArchiveAsyLLM consists of several core components:
 
@@ -71,13 +71,92 @@ ArchiveAsyLLM consists of several core components:
 - **Extractor**: Analyzes LLM responses to extract knowledge
 - **Consistency Checker**: Identifies inconsistencies with established patterns
 
-## 🛠️ Configuration
+# Configuration
 
-ArchiveAsyLLM supports multiple levels of configuration:
+## Environment Variables
 
-- **Global Configuration**: In `config.py` or environment variables
-- **Project Configuration**: Project-specific settings
-- **Chat Configuration**: Settings for individual chats
+ArchiveasyLLM can be configured using environment variables or a `.env` file. The following configuration options are available:
+
+### Required Configuration
+
+These settings should be configured before running the application:
+
+- **LLM API Keys**
+  - `ANTHROPIC_API_KEY`: Your Anthropic API key (if using Claude)
+  - `OPENAI_API_KEY`: Your OpenAI API key (if using GPT models)
+
+- **Neo4j Database**
+  - `GRAPH_DB_URL`: Neo4j database URL (default: `bolt://localhost:7687`)
+  - `GRAPH_DB_USER`: Neo4j username (default: `neo4j`)
+  - `GRAPH_DB_PASSWORD`: Neo4j password (required)
+
+### Optional Configuration
+
+These settings have reasonable defaults but can be customized:
+
+- **LLM Settings**
+  - `LLM_PROVIDER`: Which LLM provider to use (`anthropic` or `openai`, default: `anthropic`)
+  - `ANTHROPIC_MODEL`: Which Anthropic model to use (default: `claude-3-haiku-20240307`)
+  - `OPENAI_MODEL`: Which OpenAI model to use (default: `gpt-4`)
+  - `MAX_TOKENS`: Maximum tokens in LLM responses (default: `4096`)
+  - `TEMPERATURE`: Creativity of LLM responses (default: `0.7`)
+
+- **Vector Database**
+  - `EMBEDDING_MODEL`: Model for text embeddings (default: `all-MiniLM-L6-v2`)
+  - `VECTOR_INDEX_PATH`: Path to store vector indexes (default: `./data/vector_indexes`)
+  - `DISTANCE_THRESHOLD`: Maximum distance for relevant results (default: `0.75`)
+
+- **Application Settings**
+  - `DEBUG`: Enable debug mode (`true` or `false`, default: `false`)
+  - `HOST`: Host to bind the server to (default: `0.0.0.0`)
+  - `PORT`: Port to run the server on (default: `5000`)
+  - `SECRET_KEY`: Secret key for session encryption (default: `dev-secret-key`)
+
+- **API Security**
+  - `API_KEY`: API key for API authentication (default: `dev-api-key`)
+
+## Configuration Methods
+
+### Using Environment Variables
+
+You can set these variables in your shell before running the application:
+
+```bash
+export ANTHROPIC_API_KEY=your_api_key_here
+export GRAPH_DB_PASSWORD=your_password_here
+python app.py
+```
+
+### Using a .env File
+
+1. Copy the provided example file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit the `.env` file with your configuration values
+
+3. Run the application:
+   ```bash
+   python app.py
+   ```
+
+The application will automatically load settings from the `.env` file if it exists.
+
+## Configuration Hierarchy
+
+Configuration is loaded in the following order (higher priority overrides lower):
+
+1. Environment variables
+2. `.env` file
+3. Default values
+
+## Project and Chat-Specific Configuration
+
+ArchiveasyLLM also supports per-project and per-chat configuration, which can be managed through the UI or API. These are stored in:
+
+- Project config: `./data/projects/{project_id}/config.json`
+- Chat config: `./data/chats/{chat_id}/config.json`
 
 Configuration options include:
 - LLM provider, model, and parameters
@@ -100,10 +179,6 @@ ArchiveAsyLLM can be extended to integrate with:
 - **Version Control**: Track code changes alongside architectural decisions
 - **Documentation**: Generate architecture docs from extracted knowledge
 - **IDE Extensions**: Provide context and validation during development
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📜 License
 

@@ -1,6 +1,7 @@
 """
 Consistency checker for identifying deviations from established patterns.
 """
+# crumb: analyzer\consistency.py
 from typing import Dict, Any, List, Optional
 import re
 from archiveasy.memory.graph import KnowledgeGraph

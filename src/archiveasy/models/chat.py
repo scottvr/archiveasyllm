@@ -1,6 +1,7 @@
 """
 Chat and Message data models for ArchiveasyLLM.
 """
+# crumb: models\chat.py
 import os
 import json
 import uuid

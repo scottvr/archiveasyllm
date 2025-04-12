@@ -1,6 +1,7 @@
 """
 Knowledge Graph implementation for storing architectural decisions and patterns.
 """
+# crumb: memory\graph.old.py
 from typing import Dict, Any, List, Optional
 import uuid
 from neo4j import GraphDatabase

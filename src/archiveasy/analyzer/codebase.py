@@ -1,6 +1,7 @@
 """
 Codebase analyzer for initializing the knowledge graph from existing code.
 """
+# crumb: analyzer\codebase.py
 import os
 import re
 from typing import Dict, Any, List, Optional, Set, Tuple
