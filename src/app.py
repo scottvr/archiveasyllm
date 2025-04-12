@@ -284,6 +284,7 @@ def analyze_codebase(project_id):
 
 @app.route('/api/project/<project_id>/knowledge/<knowledge_type>', methods=['GET'])
 def get_knowledge(project_id, knowledge_type):
+                    })
     """
     Get knowledge elements from the knowledge graph.
     
@@ -343,7 +344,6 @@ def get_knowledge(project_id, knowledge_type):
                         "name": record["name"],
                         "description": record["description"],
                         "examples": record["examples"] if record["examples"] else []
-                    })
                 
                 return jsonify(patterns)
                 

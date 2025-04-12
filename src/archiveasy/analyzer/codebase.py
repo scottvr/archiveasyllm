@@ -175,25 +175,39 @@ class CodebaseAnalyzer:
             }
         }
         
-        # Store in knowledge graph
         with self.knowledge_graph.driver.session() as session:
-            session.run(
+            # Check if file entity already exists
+            result = session.run(
                 """
-                MATCH (p:Project {id: $project_id})
-                MERGE (f:Entity {id: $id, project_id: $project_id})
-                SET f.type = $type, 
-                    f.name = $name, 
-                    f.updated_at = datetime(),
-                    f += $properties
-                MERGE (f)-[:BELONGS_TO]->(p)
+                MATCH (f:Entity {id: $id, project_id: $project_id})
+                RETURN count(f) as count
                 """,
                 id=file_entity["id"],
-                project_id=project_id,
-                type=file_entity["type"],
-                name=file_entity["name"],
-                properties=file_entity["properties"]
+                project_id=project_id
             )
-        
+    
+            if result.single()["count"] == 0:
+                # Entity doesn't exist, so create it
+                print(f"Creating entity {file_path}")
+                session.run(
+                    """
+                    MATCH (p:Project {id: $project_id})
+                    MERGE (f:Entity {id: $id, project_id: $project_id})
+                    SET f.type = $type, 
+                        f.name = $name, 
+                        f.updated_at = datetime(),
+                        f += $properties
+                    MERGE (f)-[:BELONGS_TO]->(p)
+                    """,
+                    id=file_entity["id"],
+                    project_id=project_id,
+                    type=file_entity["type"],
+                    name=file_entity["name"],
+                    properties=file_entity["properties"]
+                )
+            else:
+                print(f"Skipping entity ${file_path}")
+
         file_stats["entities"] += 1
         
         # Extract knowledge based on language
