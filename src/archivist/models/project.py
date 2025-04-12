@@ -1,5 +1,5 @@
 """
-Project data model for ArchivistLLM.
+Project data model for ArchiveAsyLLM.
 """
 import os
 import json

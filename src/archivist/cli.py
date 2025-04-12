@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Command-line interface for ArchivistLLM.
+Command-line interface for ArchiveAsyLLM.
 """
 import argparse
 import os
@@ -238,7 +238,7 @@ def update_codebase(args):
 
 def main():
     """Main entry point for the CLI."""
-    parser = argparse.ArgumentParser(description="ArchivistLLM Command Line Interface")
+    parser = argparse.ArgumentParser(description="ArchiveAsyLLM Command Line Interface")
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
     
     # Initialize project command

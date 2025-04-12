@@ -49,7 +49,7 @@ When the user chats with the LLM, the system references this knowledge
 New code generations are checked against the established patterns
 Inconsistencies are flagged to the user.
 
-This feature allows you to bootstrap ArchivistLLM with an existing codebase ( ArchiveAsyLLM itself was developed in this Ouroboros sort of way.) The system will maintain a deep understanding of your code structure, patterns, and decisions, ensuring that new LLM-generated code remains consistent with your architecture.
+This feature allows you to bootstrap ArchiveAsyLLM with an existing codebase ( ArchiveAsyLLM itself was developed in this Ouroboros sort of way.) The system will maintain a deep understanding of your code structure, patterns, and decisions, ensuring that new LLM-generated code remains consistent with your architecture.
 
 To get started with your own codebase, you can:
 
