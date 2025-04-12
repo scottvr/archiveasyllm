@@ -1,0 +1,19 @@
+Folder PATH listing for volume OS
+Volume serial number is EAB2-97C0
+C:.
+ÃÄÄÄsrc
+³   ÃÄÄÄarchiveasyllm
+³   ³   ÃÄÄÄanalyzer
+³   ³   ÃÄÄÄapi
+³   ³   ÃÄÄÄclients
+³   ³   ³   ÀÄÄÄpython
+³   ³   ÃÄÄÄllm
+³   ³   ÃÄÄÄmemory
+³   ³   ÃÄÄÄmodels
+³   ³   ÃÄÄÄstatic
+³   ³   ³   ÃÄÄÄcss
+³   ³   ³   ÀÄÄÄjs
+³   ³   ³       ÀÄÄÄtemplates
+³   ³   ÀÄÄÄtemplates
+³   ÀÄÄÄutils
+ÀÄÄÄtests
