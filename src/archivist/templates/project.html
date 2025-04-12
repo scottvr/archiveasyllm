@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} - ArchivistLLM{% endblock %}
+
+{% block content %}
+<div class="container-lg">
+  <div class="row mb-4">
+    <div class="col">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1>{{ project.name }}</h1>
+          <p class="text-muted">{{ project.description }}</p>
+        </div>
+        <div>
+          <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#projectSettingsModal">
+            <i class="bi bi-gear"></i> Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% if project.codebase_path %}
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Codebase</h5>
+          <button class="btn btn-sm btn-outline-primary" id="updateCodebaseBtn">
+            <i class="bi bi-arrow-repeat"></i> Update
+          </button>
+        </div>
+        <div class="card-body">
+          <p><strong>Path:</strong> {{ project.codebase_path }}</p>
+          
+          {% if project.codebase_stats %}
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Analysis Statistics</h6>
+              <ul>
+                <li>Files processed: {{ project.codebase_stats.files_processed }}</li>
+                <li>Entities extracted: {{ project.codebase_stats.entities_extracted }}</li>
+                <li>Relationships: {{ project.codebase_stats.relationships_extracted }}</li>
+                <li>Decisions identified: {{ project.codebase_stats.decisions_extracted }}</li>
+                <li>Patterns identified: {{ project.codebase_stats.patterns_extracted }}</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Language Breakdown</h6>
+              {% if project.codebase_stats.languages %}
+              <ul>
+                {% for lang, count in project.codebase_stats.languages.items() %}
+                <li>{{ lang }}: {{ count }} files</li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p>No language data available.</p>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Chats</h5>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+            <i class="bi bi-plus"></i> New Chat
+          </button>
+        </div>
+        <div class="card-body">
+          {% if chats %}
+          <div class="row">
+            {% for chat in chats %}
+            <div class="col-md-4 mb-3">
+              <div class="card chat-card h-100" onclick="window.location.href='/chat/{{ chat.id }}'">
+                <div class="card-body">
+                  <h5 class="card-title">{{ chat.name }}</h5>
+                  <p class="card-text text-muted">
+                    {{ chat.message_count }} messages
+                    <br>
+                    <small>Last updated: {{ chat.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                  </p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+            <p class="mt-3">No chats yet. Start a new chat to begin.</p>
+            <button class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#newChatModal">
+              <i class="bi bi-plus"></i> New Chat
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  {% if not project.codebase_path %}
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Add Codebase</h5>
+        </div>
+        <div class="card-body">
+          <p>Connect this project to an existing codebase to extract knowledge and maintain consistency.</p>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCodebaseModal">
+            <i class="bi bi-folder-plus"></i> Add Codebase
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
+  <div class="row mb-4">
+    <div class="col">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Knowledge Graph</h5>
+        </div>
+        <div class="card-body">
+          <ul class="nav nav-tabs" id="knowledgeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="decisions-tab" data-bs-toggle="tab" data-bs-target="#decisions" type="button" role="tab">
+                Decisions
+              </button>
