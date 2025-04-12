@@ -9,7 +9,7 @@ import json
 from typing import Dict, Any, List, Optional, Union
 import os
 
-class ArchivistClient:
+class ArchiveAsyLLMClient:
     """
     Client for interacting with the ArchiveAsyLLM API.
     """
@@ -44,7 +44,7 @@ class ArchivistClient:
             JSON response
             
         Raises:
-            ArchivistAPIError: If the API returns an error
+            ArchiveAsyLLMAPIError: If the API returns an error
         """
         url = f"{self.api_url}/{endpoint.lstrip('/')}"
         
@@ -63,7 +63,7 @@ class ArchivistClient:
             # Check for errors
             if not response.ok:
                 error_info = response.json() if response.content else {"error": "Unknown error"}
-                raise ArchivistAPIError(
+                raise ArchiveAsyLLMAPIError(
                     f"API error ({response.status_code}): {error_info.get('error', 'Unknown error')}",
                     status_code=response.status_code,
                     error_info=error_info
@@ -76,7 +76,7 @@ class ArchivistClient:
                 return {"success": True}
                 
         except requests.RequestException as e:
-            raise ArchivistAPIError(f"Request failed: {str(e)}")
+            raise ArchiveAsyLLMAPIError(f"Request failed: {str(e)}")
     
     # Project methods
     
@@ -402,7 +402,7 @@ class ArchivistClient:
         return self._request("POST", f"projects/{project_id}/consistency", data=data)
 
 
-class ArchivistAPIError(Exception):
+class ArchiveAsyLLMAPIError(Exception):
     """Exception raised for ArchiveAsyLLM API errors."""
     
     def __init__(self, message: str, status_code: Optional[int] = None, 
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     api_key = os.environ.get("ARCHIVIST_API_KEY") or "dev-api-key"
     api_url = os.environ.get("ARCHIVIST_API_URL") or "http://localhost:5000/api/v1"
     
-    client = ArchivistClient(api_url, api_key)
+    client = ArchiveAsyLLMClient(api_url, api_key)
     
     if len(sys.argv) < 2:
         print("Usage: python archiveasy_client.py <command>")
@@ -477,6 +477,6 @@ if __name__ == "__main__":
             print(f"Unknown command: {command}")
             sys.exit(1)
             
-    except ArchivistAPIError as e:
+    except ArchiveAsyLLMAPIError as e:
         print(f"Error: {e.message}")
         sys.exit(1)

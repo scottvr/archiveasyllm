@@ -52,10 +52,14 @@ GRAPH_DB_PASSWORD=your_password
 
 ```
 python -c "from archiveasy.memory.graph import KnowledgeGraph; KnowledgeGraph('bolt://localhost:7687', 'neo4j', 'your_password').init_schema()"
-
 ```
 
-### Running ArchivistLLM
+Or, use the CLI:
+```
+python cli.py init "ArchiveAsyLLMLLM" "./path/to/archivist-llm" --description "Self-reference project for ArchiveAsyLLMLLM"
+```
+
+### Running ArchiveAsyLLMLLM
 
 **Start the application:**
 ```
@@ -66,8 +70,8 @@ python app.py
 Access the web interface in your browser:
 http://localhost:5000
 
-Initialize with ArchivistLLM's own codebase:
-bashpython cli.py init "ArchivistLLM" "$(pwd)" --description "Self-reference project for ArchivistLLM" --exclude "venv,.git,__pycache__,node_modules"
+Initialize with ArchiveAsyLLMLLM's own codebase:
+bashpython cli.py init "ArchiveAsyLLMLLM" "$(pwd)" --description "Self-reference project for ArchiveAsyLLMLLM" --exclude "venv,.git,__pycache__,node_modules"
 
 
 Testing the API

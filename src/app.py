@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ArchivistLLM - A framework for maintaining LLM reasoning and consistency.
+ArchiveAsyLLMLLM - A framework for maintaining LLM reasoning and consistency.
 """
 import os
 from flask import Flask, render_template, request, jsonify, session
@@ -21,7 +21,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
 # Initialize components
 llm_client = LLMClient.from_config(config.llm_config)
-knowledge_graph = KnowledgeGraph(config.graph_db_url)
+knowledge_graph = KnowledgeGraph(config.graph_db_url, config.graph_db_user, config.graph_db_password)
 vector_store = VectorStore(config.vector_db_config)
 consistency_checker = ConsistencyChecker(knowledge_graph, vector_store)
 
