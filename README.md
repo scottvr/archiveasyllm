@@ -1,5 +1,7 @@
 # ArchiveAsyLLM
 
+### (pronounced "Archive Asylum" or "archive easy")
+
 ArchiveAsyLLM is a framework for maintaining consistency in LLM-driven development by tracking reasoning, patterns, and architectural decisions across conversations.
 
 LLMs are powerful tools for code generation and problem-solving, but they have a significant limitation: they can "forget" previous design decisions or architectural patterns when code evolves over multiple prompts. ArchiveAsyLLM attempts to solve this problem by:
