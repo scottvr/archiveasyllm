@@ -5,11 +5,11 @@ This module provides two levels of package validation:
 1. Strict whitelist mode: Only allows pre-approved packages
 2. Verification mode: Validates packages against PyPI and analyzes their intended purpose
 """
-# crumb: security\package_validator.py
 import os
 import json
 import re
 import logging
+from datetime import datetime
 import requests
 from typing import Dict, List, Set, Tuple, Optional, Union
 from pathlib import Path
@@ -313,7 +313,7 @@ class PackageValidator:
                 metadata = {
                     "purpose": data.get("info", {}).get("summary", ""),
                     "pypi_url": f"https://pypi.org/project/{package_name}/",
-                    "verified_at": datetime.datetime.now().isoformat()
+                    "verified_at": datetime.now().isoformat()
                 }
                 
                 return True, f"Package '{package_name}' exists on PyPI", metadata

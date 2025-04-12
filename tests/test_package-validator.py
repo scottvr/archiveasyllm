@@ -8,7 +8,7 @@ import os
 from unittest.mock import patch, MagicMock
 
 # Import the module to test
-from archiveasy.security.package_validator import PackageValidator, create_validator
+from archiveasy.security.validator import PackageValidator, create_validator
 
 class TestPackageValidator(unittest.TestCase):
     """Test the PackageValidator class."""

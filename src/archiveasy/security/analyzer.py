@@ -13,7 +13,7 @@ from typing import Dict, List, Set, Tuple, Optional, Union
 from pathlib import Path
 from collections import defaultdict
 
-from archiveasy.security.package_validator import PackageValidator
+from archiveasy.security.validator import PackageValidator
 
 logger = logging.getLogger(__name__)
 

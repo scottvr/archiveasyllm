@@ -3,6 +3,7 @@
 ArchiveAsyLLM - A framework for maintaining LLM reasoning and consistency.
 """
 import os
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, session
 from archiveasy.llm.client import LLMClient
 from archiveasy.memory.graph import KnowledgeGraph
