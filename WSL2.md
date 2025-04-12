@@ -56,10 +56,10 @@ python -c "from archiveasy.memory.graph import KnowledgeGraph; KnowledgeGraph('b
 
 Or, use the CLI:
 ```
-python cli.py init "ArchiveAsyLLMLLM" "./path/to/archivist-llm" --description "Self-reference project for ArchiveAsyLLMLLM"
+python cli.py init "ArchiveAsyLLM" "./path/to/archiveasyllm" --description "Self-reference project for ArchiveAsyLLM"
 ```
 
-### Running ArchiveAsyLLMLLM
+### Running ArchiveAsyLLM
 
 **Start the application:**
 ```
@@ -70,8 +70,8 @@ python app.py
 Access the web interface in your browser:
 http://localhost:5000
 
-Initialize with ArchiveAsyLLMLLM's own codebase:
-bashpython cli.py init "ArchiveAsyLLMLLM" "$(pwd)" --description "Self-reference project for ArchiveAsyLLMLLM" --exclude "venv,.git,__pycache__,node_modules"
+Initialize with ArchiveAsyLLM's own codebase:
+bashpython cli.py init "ArchiveAsyLLM" "$(pwd)" --description "Self-reference project for ArchiveAsyLLM" --exclude "venv,.git,__pycache__,node_modules"
 
 
 Testing the API

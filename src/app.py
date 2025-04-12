@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ArchiveAsyLLMLLM - A framework for maintaining LLM reasoning and consistency.
+ArchiveAsyLLM - A framework for maintaining LLM reasoning and consistency.
 """
 import os
 from flask import Flask, render_template, request, jsonify, session
