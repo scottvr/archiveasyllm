@@ -14,8 +14,8 @@ from archiveasy.api.routes import api_bp, init_api
 import config
 
 app = Flask(__name__, 
-           template_folder='src/archiveasy/templates',
-           static_folder='src/archiveasy/static')
+           template_folder='archiveasy/templates',
+           static_folder='archiveasy/static')
 
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
@@ -112,6 +112,25 @@ def view_project(project_id):
     chats = Chat.list_by_project(project_id)
     return render_template('project.html', project=project, chats=chats)
 
+@app.route('/project/<project_id>/delete', methods=['POST'])
+def delete_project(project_id):
+    # Delete vector index
+    vector_store.delete_project(project_id)
+
+    # Delete graph data
+    knowledge_graph.delete_project_nodes(project_id)
+
+    # Delete all chat data
+    for chat in get_chats_for_project(project_id):
+        delete_chat_files(chat["id"])
+        chat_store.remove(chat["id"])
+
+    # Delete project metadata
+    project_store.remove(project_id)
+
+    flash("Project deleted successfully.", "success")
+    return redirect(url_for('index'))
+
 @app.route('/chat/new', methods=['POST'])
 def new_chat():
     """Create a new chat in a project."""
@@ -132,6 +151,27 @@ def view_chat(chat_id):
     session['current_project_id'] = chat.project_id
     
     return render_template('chat.html', chat=chat, messages=messages, project=project)
+
+@app.route('/chat/<chat_id>/delete', methods=['POST'])
+def delete_chat(chat_id):
+    # Get the project ID for redirect
+    chat = get_chat(chat_id)
+    project_id = chat["project_id"]
+
+    # Delete from vector store
+    vector_store.delete_chat(chat_id)
+
+    # Delete from graph
+    knowledge_graph.delete_chat_nodes(chat_id)
+
+    # Delete chat metadata/artifacts from disk
+    delete_chat_files(chat_id)
+
+    # Remove from whatever in-memory or persistent store you're using
+    chat_store.remove(chat_id)
+
+    flash("Chat deleted successfully.", "success")
+    return redirect(url_for('project_view', project_id=project_id))
 
 @app.route('/api/message', methods=['POST'])
 def send_message():

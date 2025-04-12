@@ -13,6 +13,11 @@
       <button id="settingsBtn" class="btn btn-outline-secondary">
         <i class="bi bi-gear"></i> Settings
       </button>
+      <form method="POST" action="/chat/{{ chat.id }}/delete" onsubmit="return confirm('Delete this chat? It cannot be undone.');">
+        <button type="submit" class="btn btn-outline-danger btn-sm">
+          <i class="bi bi-trash"></i> Delete Chat
+        </button>
+      </form>
     </div>
   </div>
 

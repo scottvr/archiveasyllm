@@ -29,6 +29,11 @@
           <button class="btn btn-sm btn-outline-primary" id="updateCodebaseBtn">
             <i class="bi bi-arrow-repeat"></i> Update
           </button>
+          <form method="POST" action="/project/{{ project.id }}/delete" onsubmit="return confirm('Are you sure you want to delete this project and all associated data?');">
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="bi bi-trash"></i> Delete Project
+            </button>
+          </form>
         </div>
         <div class="card-body">
           <p><strong>Path:</strong> {{ project.codebase_path }}</p>
@@ -88,6 +93,9 @@
                     <small>Last updated: {{ chat.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
                   </p>
                 </div>
+                <form method="POST" action="/chat/{{ chat.id }}/delete" onsubmit="return confirm('Delete this chat?');" style="position: absolute; top: 8px; right: 8px;">
+                  <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-x"></i></button>
+                </form>
               </div>
             </div>
             {% endfor %}

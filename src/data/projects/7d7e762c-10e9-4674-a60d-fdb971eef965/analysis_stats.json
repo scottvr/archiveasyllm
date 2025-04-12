@@ -1,0 +1,12 @@
+{
+  "files_processed": 0,
+  "entities_extracted": 0,
+  "relationships_extracted": 0,
+  "decisions_extracted": 0,
+  "patterns_extracted": 0,
+  "languages": {
+    "markdown": 4,
+    "python": 21,
+    "javascript": 1
+  }
+}

@@ -218,6 +218,12 @@ class Chat:
             except Exception as e:
                 print(f"Error deleting chat {self.id}: {e}")
         
+        if vector_store:
+            vector_store.delete_chat(self.id)
+
+        if knowledge_graph:
+            knowledge_graph.delete_chat_nodes(self.id)
+
         return False
     
     def _save(self) -> None:

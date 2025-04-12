@@ -87,6 +87,8 @@ class CodebaseAnalyzer:
             "languages": {}
         }
         
+        print(f"Analyzing codebase at: {codebase_path}")
+
         # Walk the directory structure
         codebase_path = os.path.abspath(codebase_path)
         for root, dirs, files in os.walk(codebase_path):
@@ -96,7 +98,7 @@ class CodebaseAnalyzer:
             # Process each file
             for file in files:
                 file_path = os.path.join(root, file)
-                
+                print(f"found file: {file_path}") 
                 # Skip if already processed
                 if file_path in self.processed_files:
                     continue

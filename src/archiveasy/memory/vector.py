@@ -62,7 +62,7 @@ class VectorStore:
             if model_name == "default":
                 model_name = "all-MiniLM-L6-v2"  # Small, efficient model
             
-            return SentenceTransformer(model_name)
+            return SentenceTransformer(model_name, device='cuda')
         except Exception as e:
             logger.error(f"Error loading embedding model: {e}")
             # Fallback to a very simple embedding method
