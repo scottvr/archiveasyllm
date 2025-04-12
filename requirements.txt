@@ -1,6 +1,7 @@
 # Web application
 flask==2.3.3
 gunicorn==21.2.0
+flask-restx==1.1.0
 
 # LLM API clients
 anthropic==0.8.1
