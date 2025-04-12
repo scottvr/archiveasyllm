@@ -8,13 +8,13 @@ import uuid
 from datetime import datetime
 import json
 
-from archivist.memory.graph import KnowledgeGraph
-from archivist.memory.vector import VectorStore
-from archivist.analyzer.codebase import CodebaseAnalyzer
-from archivist.analyzer.consistency import ConsistencyChecker
-from archivist.models.project import Project
-from archivist.models.chat import Chat, Message
-from archivist.llm.client import LLMClient
+from archiveasy.memory.graph import KnowledgeGraph
+from archiveasy.memory.vector import VectorStore
+from archiveasy.analyzer.codebase import CodebaseAnalyzer
+from archiveasy.analyzer.consistency import ConsistencyChecker
+from archiveasy.models.project import Project
+from archiveasy.models.chat import Chat, Message
+from archiveasy.llm.client import LLMClient
 
 import config
 
@@ -675,7 +675,7 @@ def _build_context(prompt, project_id):
 
 def _extract_and_store_knowledge(response, artifacts, project_id):
     """Extract knowledge from response and store in knowledge systems."""
-    from archivist.memory.extractor import KnowledgeExtractor
+    from archiveasy.memory.extractor import KnowledgeExtractor
     
     extractor = KnowledgeExtractor()
     

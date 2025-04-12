@@ -10,10 +10,10 @@ import uuid
 import logging
 from datetime import datetime
 
-from archivist.memory.graph import KnowledgeGraph
-from archivist.memory.vector import VectorStore
-from archivist.analyzer.codebase import CodebaseAnalyzer
-from archivist.models.project import Project
+from archiveasy.memory.graph import KnowledgeGraph
+from archiveasy.memory.vector import VectorStore
+from archiveasy.analyzer.codebase import CodebaseAnalyzer
+from archiveasy.models.project import Project
 import config
 
 # Configure logging

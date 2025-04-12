@@ -3,9 +3,9 @@ Consistency checker for identifying deviations from established patterns.
 """
 from typing import Dict, Any, List, Optional
 import re
-from archivist.memory.graph import KnowledgeGraph
-from archivist.memory.vector import VectorStore
-from archivist.memory.extractor import KnowledgeExtractor
+from archiveasy.memory.graph import KnowledgeGraph
+from archiveasy.memory.vector import VectorStore
+from archiveasy.memory.extractor import KnowledgeExtractor
 
 class ConsistencyChecker:
     """

@@ -4,13 +4,13 @@ ArchivistLLM - A framework for maintaining LLM reasoning and consistency.
 """
 import os
 from flask import Flask, render_template, request, jsonify, session
-from archivist.llm.client import LLMClient
-from archivist.memory.graph import KnowledgeGraph
-from archivist.memory.vector import VectorStore
-from archivist.analyzer.consistency import ConsistencyChecker
-from archivist.models.chat import Chat, Message
-from archivist.models.project import Project
-from archivist.api.routes import api_bp, init_api
+from archiveasy.llm.client import LLMClient
+from archiveasy.memory.graph import KnowledgeGraph
+from archiveasy.memory.vector import VectorStore
+from archiveasy.analyzer.consistency import ConsistencyChecker
+from archiveasy.models.chat import Chat, Message
+from archiveasy.models.project import Project
+from archiveasy.api.routes import api_bp, init_api
 import config
 
 app = Flask(__name__)
@@ -61,7 +61,7 @@ def new_project():
     # If codebase path is provided, analyze it
     if codebase_path and os.path.isdir(codebase_path):
         try:
-            from archivist.analyzer.codebase import CodebaseAnalyzer
+            from archiveasy.analyzer.codebase import CodebaseAnalyzer
             
             # Initialize analyzer
             analyzer = CodebaseAnalyzer(knowledge_graph, vector_store)
@@ -195,7 +195,7 @@ def analyze_codebase(project_id):
         return jsonify({"error": "Invalid codebase path"}), 400
     
     try:
-        from archivist.analyzer.codebase import CodebaseAnalyzer
+        from archiveasy.analyzer.codebase import CodebaseAnalyzer
         
         # Initialize analyzer
         analyzer = CodebaseAnalyzer(knowledge_graph, vector_store)
@@ -417,7 +417,7 @@ def _build_context(prompt, project_id):
 
 def _extract_and_store_knowledge(response, artifacts, project_id):
     """Extract knowledge from response and store in knowledge systems."""
-    from archivist.memory.extractor import KnowledgeExtractor
+    from archiveasy.memory.extractor import KnowledgeExtractor
     
     extractor = KnowledgeExtractor()
     

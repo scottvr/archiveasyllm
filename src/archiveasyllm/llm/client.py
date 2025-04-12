@@ -23,7 +23,7 @@ class LLMClient:
         
         # Dynamically load the provider-specific implementation
         try:
-            provider_module = importlib.import_module(f"archivist.llm.{provider}")
+            provider_module = importlib.import_module(f"archiveasy.llm.{provider}")
             self.implementation = provider_module.LLMImplementation(api_key, **kwargs)
         except (ImportError, AttributeError) as e:
             raise ValueError(f"Unsupported LLM provider: {provider}. Error: {e}")

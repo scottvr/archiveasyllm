@@ -487,4 +487,4 @@ This API is versioned. The current version is v1. If breaking changes are introd
 
 ## Getting Help
 
-If you encounter any issues or have questions about the API, please [create an issue](https://github.com/yourusername/archivist-llm/issues) on the GitHub repository.
+If you encounter any issues or have questions about the API, please [create an issue](https://github.com/yourusername/archiveasy-llm/issues) on the GitHub repository.

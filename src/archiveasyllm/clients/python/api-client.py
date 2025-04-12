@@ -431,7 +431,7 @@ if __name__ == "__main__":
     client = ArchivistClient(api_url, api_key)
     
     if len(sys.argv) < 2:
-        print("Usage: python archivist_client.py <command>")
+        print("Usage: python archiveasy_client.py <command>")
         print("Commands: list-projects, create-project, analyze-codebase")
         sys.exit(1)
     
@@ -448,7 +448,7 @@ if __name__ == "__main__":
                 
         elif command == "create-project":
             if len(sys.argv) < 3:
-                print("Usage: python archivist_client.py create-project <name> [description] [codebase_path]")
+                print("Usage: python archiveasy_client.py create-project <name> [description] [codebase_path]")
                 sys.exit(1)
                 
             name = sys.argv[2]
@@ -460,7 +460,7 @@ if __name__ == "__main__":
             
         elif command == "analyze-codebase":
             if len(sys.argv) < 3:
-                print("Usage: python archivist_client.py analyze-codebase <project_id> [codebase_path]")
+                print("Usage: python archiveasy_client.py analyze-codebase <project_id> [codebase_path]")
                 sys.exit(1)
                 
             project_id = sys.argv[2]
