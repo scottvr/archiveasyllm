@@ -4,7 +4,7 @@ Requirements analyzer for validating project dependencies.
 This module scans requirements files and Python code to identify imported packages
 and validate them against the package validator to prevent slopsquatting.
 """
-# crumb: security\requirements_analyzer.py
+# crumb: security\analyzer.py
 import os
 import re
 import ast

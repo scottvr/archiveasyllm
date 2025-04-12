@@ -49,6 +49,24 @@ class KnowledgeExtractor:
         
         return result
     
+    def _ensure_result_structure(self, result: Optional[Dict[str, List[Dict[str, Any]]]] = None) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Ensure the result dictionary has all required keys for knowledge extraction.
+    
+        Args:
+            result: Existing result dictionary or None
+    
+        Returns:
+            Initialized result dictionary
+        """
+        if result is None or not isinstance(result, dict):
+            result = {}
+    
+        for key in ["entities", "relationships", "decisions", "patterns"]:
+            result.setdefault(key, [])
+    
+        return result
+    
     def _extract_from_text(self, text: str, result: Dict[str, List[Dict[str, Any]]]) -> None:
         """
         Extract knowledge elements from text response.
@@ -57,6 +75,7 @@ class KnowledgeExtractor:
             text: The LLM response text
             result: Dictionary to populate with extracted elements
         """
+        result = self._ensure_result_structure(result)
         # Extract architectural decisions
         decisions = self._extract_decisions(text)
         result["decisions"].extend(decisions)
@@ -87,6 +106,8 @@ class KnowledgeExtractor:
         if not content:
             return
         
+        result = self._ensure_result_structure(result)
+
         # Handle code artifacts
         if artifact_type in ["code", "application/vnd.ant.code"]:
             # Extract code entities and relationships
@@ -120,6 +141,7 @@ class KnowledgeExtractor:
         Returns:
             List of extracted decision dictionaries
         """
+        result = self._ensure_result_structure(result)
         decisions = []
         
         # Pattern matchers for decision statements
@@ -172,6 +194,7 @@ class KnowledgeExtractor:
         Returns:
             List of extracted pattern dictionaries
         """
+        result = self._ensure_result_structure(result)
         patterns = []
         
         # Pattern matchers for design pattern statements
@@ -221,6 +244,7 @@ class KnowledgeExtractor:
         Returns:
             List of extracted entity dictionaries
         """
+        result = self._ensure_result_structure(result)
         entities = []
         
         # Entity patterns
@@ -266,6 +290,7 @@ class KnowledgeExtractor:
         Returns:
             List of extracted relationship dictionaries
         """
+        result = self._ensure_result_structure(result)
         relationships = []
         
         # Relationship patterns
@@ -306,6 +331,7 @@ class KnowledgeExtractor:
             code: Python code content
             result: Dictionary to populate with extracted elements
         """
+        result = self._ensure_result_structure(result)
         # Extract classes
         class_pattern = r"class\s+([A-Za-z0-9_]+)(?:\s*\(([A-Za-z0-9_,\s]+)\))?"
         class_matches = re.finditer(class_pattern, code)
@@ -443,6 +469,7 @@ class KnowledgeExtractor:
             result: Dictionary to populate with extracted elements
         """
         tree = ast.parse(code)
+        result = self._ensure_result_structure(result)
         
         # Track current class for method associations
         current_class = None
@@ -494,6 +521,7 @@ class KnowledgeExtractor:
             code: JavaScript/TypeScript code content
             result: Dictionary to populate with extracted elements
         """
+        result = self._ensure_result_structure(result)
         # Extract classes
         class_pattern = r"class\s+([A-Za-z0-9_]+)(?:\s+extends\s+([A-Za-z0-9_]+))?"
         class_matches = re.finditer(class_pattern, code)
@@ -648,6 +676,7 @@ class KnowledgeExtractor:
             result: Dictionary to populate with extracted elements
         """
         # Generic function/method pattern
+        result = self._ensure_result_structure(result)
         func_pattern = r"(?:function|def|void|public|private|protected|static|async)?\s+([A-Za-z0-9_]+)\s*\(([^)]*)\)"
         func_matches = re.finditer(func_pattern, code)
         
@@ -745,6 +774,7 @@ class KnowledgeExtractor:
             markdown: Markdown content
             result: Dictionary to populate with extracted elements
         """
+        result = self._ensure_result_structure(result)
         # Extract decision headings and their content
         decision_headers = [
             "## Decision", 
@@ -839,6 +869,7 @@ class KnowledgeExtractor:
             docstring: Python docstring content
             result: Dictionary to populate with extracted elements
         """
+        result = self._ensure_result_structure(result)
         # Look for design decisions in docstrings
         decision_patterns = [
             r"Design Decision:?\s*([^\n]+)",

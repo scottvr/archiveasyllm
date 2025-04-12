@@ -9,7 +9,7 @@ import re
 import logging
 from typing import Dict, List, Set, Tuple, Optional, Union
 
-from archiveasy.security.package_validator import create_validator, PackageValidator
+from archiveasy.security.validator import create_validator, PackageValidator
 
 logger = logging.getLogger(__name__)
 

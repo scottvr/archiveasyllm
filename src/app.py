@@ -13,8 +13,8 @@ from archiveasy.models.project import Project
 from archiveasy.api.routes import api_bp, init_api
 
 # Import security components
-from archiveasy.security.package_validator import create_validator
-from archiveasy.security.code_scanner import scan_artifacts, scan_message
+from archiveasy.security.validator import create_validator
+from archiveasy.security.scanner import scan_artifacts, scan_message
 
 import config
 
@@ -313,7 +313,7 @@ def analyze_codebase(project_id):
         
         # NEW: Analyze codebase dependencies for security issues
         try:
-            from archiveasy.security.requirements_analyzer import analyze_project_dependencies
+            from archiveasy.security.analyzer import analyze_project_dependencies
             
             security_results = analyze_project_dependencies(
                 project_path=codebase_path,
@@ -477,7 +477,7 @@ def get_knowledge(project_id, knowledge_type):
                 return jsonify({"error": "No valid codebase path found for project"}), 400
             
             # Run dependency analysis
-            from archiveasy.security.requirements_analyzer import analyze_project_dependencies
+            from archiveasy.security.analyzer import analyze_project_dependencies
             
             results = analyze_project_dependencies(
                 project_path=codebase_path,

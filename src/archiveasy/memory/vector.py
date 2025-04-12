@@ -31,7 +31,7 @@ class VectorStore:
                 distance_threshold: Maximum distance for relevant results
         """
         self.config = config
-        self.dimension = config.get("dimension", 768)  # Default for many embedding models
+        self.dimension = config.get("dimension", 768)  
         self.index_path = config.get("index_path", "./data/vector_indexes")
         self.distance_threshold = config.get("distance_threshold", 0.75)
         

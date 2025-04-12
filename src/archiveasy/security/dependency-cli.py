@@ -13,8 +13,8 @@ import logging
 from typing import Dict, List, Optional
 from pathlib import Path
 
-from archiveasy.security.package_validator import create_validator
-from archiveasy.security.requirements_analyzer import analyze_project_dependencies
+from archiveasy.security.validator import create_validator
+from archiveasy.security.analyzer import analyze_project_dependencies
 
 # Configure logging
 logging.basicConfig(
