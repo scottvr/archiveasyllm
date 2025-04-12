@@ -6,15 +6,24 @@ import os
 import re
 from typing import Dict, Any, List, Optional, Set, Tuple
 import logging
+import time
 from pathlib import Path
 import ast
 import json
+import sys
 
 from archiveasy.memory.graph import KnowledgeGraph
 from archiveasy.memory.vector import VectorStore
 from archiveasy.memory.extractor import KnowledgeExtractor
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 class CodebaseAnalyzer:
     """
@@ -56,7 +65,9 @@ class CodebaseAnalyzer:
             '.md': 'markdown',
         }
         
-    def analyze_codebase(self, codebase_path: str, project_id: str, excluded_dirs: Optional[List[str]] = None) -> Dict[str, Any]:
+    def analyze_codebase(self, codebase_path: str, project_id: str, 
+                      excluded_dirs: Optional[List[str]] = None,
+                      max_files: Optional[int] = None) -> Dict[str, Any]:
         """
         Analyze a codebase and populate the knowledge graph.
         
@@ -64,6 +75,7 @@ class CodebaseAnalyzer:
             codebase_path: Path to the codebase root directory
             project_id: Project identifier
             excluded_dirs: List of directories to exclude (e.g., node_modules, venv)
+            max_files: Maximum number of files to process (optional, for debugging)
             
         Returns:
             Summary of analysis results
@@ -75,6 +87,7 @@ class CodebaseAnalyzer:
         self.processed_files = set()
         
         # Initialize the project in the knowledge graph
+        logger.info(f"Initializing project {project_id} in knowledge graph")
         self.knowledge_graph.initialize_project(project_id)
         
         # Collect statistics
@@ -87,18 +100,27 @@ class CodebaseAnalyzer:
             "languages": {}
         }
         
-        print(f"Analyzing codebase at: {codebase_path}")
+        logger.info(f"Analyzing codebase at: {codebase_path}")
+        logger.info(f"Excluded directories: {excluded_dirs}")
+        if max_files:
+            logger.info(f"Processing limited to {max_files} files (debug mode)")
 
+        # First, collect all eligible files to process
+        all_files = []
+        
+        logger.info("Scanning directory structure...")
+        start_time = time.time()
+        
         # Walk the directory structure
         codebase_path = os.path.abspath(codebase_path)
         for root, dirs, files in os.walk(codebase_path):
             # Skip excluded directories
-            dirs[:] = [d for d in dirs if d not in excluded_dirs]
+            dirs[:] = [d for d in dirs if d not in excluded_dirs and not any(excl in os.path.join(root, d) for excl in excluded_dirs)]
             
             # Process each file
             for file in files:
                 file_path = os.path.join(root, file)
-                print(f"found file: {file_path}") 
+                
                 # Skip if already processed
                 if file_path in self.processed_files:
                     continue
@@ -110,40 +132,65 @@ class CodebaseAnalyzer:
                 if ext not in self.language_map:
                     continue
                 
-                # Mark as processed
-                self.processed_files.add(file_path)
+                # Add to processing list
+                all_files.append((file_path, self.language_map[ext]))
+        
+        scan_time = time.time() - start_time
+        logger.info(f"Directory scan complete in {scan_time:.2f}s, found {len(all_files)} eligible files")
+        
+        # Apply max_files limit if specified
+        if max_files and len(all_files) > max_files:
+            logger.info(f"Limiting to {max_files} files for processing")
+            all_files = all_files[:max_files]
+        
+        # Now process files
+        logger.info(f"Beginning processing of {len(all_files)} files...")
+        
+        for idx, (file_path, language) in enumerate(all_files):
+            # Log progress periodically
+            if idx % 10 == 0 or idx == len(all_files) - 1:
+                logger.info(f"Processing file {idx+1}/{len(all_files)}: {file_path}")
+            
+            # Mark as processed
+            self.processed_files.add(file_path)
+            
+            try:
+                # Read file content
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
                 
-                # Process file based on type
-                try:
-                    language = self.language_map[ext]
-                    
-                    # Update language stats
-                    if language not in stats["languages"]:
-                        stats["languages"][language] = 0
-                    stats["languages"][language] += 1
-                    
-                    # Read file content
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                        content = f.read()
-                    
-                    # Extract knowledge based on file type
-                    file_stats = self._process_file(file_path, content, language, project_id)
-                    
-                    # Update statistics
-                    stats["files_processed"] += 1
-                    stats["entities_extracted"] += file_stats["entities"]
-                    stats["relationships_extracted"] += file_stats["relationships"]
-                    stats["decisions_extracted"] += file_stats["decisions"]
-                    stats["patterns_extracted"] += file_stats["patterns"]
-                    
-                except Exception as e:
-                    logger.error(f"Error processing file {file_path}: {e}")
+                # Extract knowledge based on file type
+                file_stats = self._process_file(file_path, content, language, project_id)
+                
+                # Update statistics
+                stats["files_processed"] += 1
+                stats["entities_extracted"] += file_stats["entities"]
+                stats["relationships_extracted"] += file_stats["relationships"]
+                stats["decisions_extracted"] += file_stats["decisions"]
+                stats["patterns_extracted"] += file_stats["patterns"]
+                
+                # Update language stats
+                if language not in stats["languages"]:
+                    stats["languages"][language] = 0
+                stats["languages"][language] += 1
+                
+            except Exception as e:
+                logger.error(f"Error processing file {file_path}: {e}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Extract module-level relationships
-        self._extract_module_relationships(project_id)
+        logger.info("Extracting module-level relationships...")
+        relationship_start = time.time()
+        try:
+            self._extract_module_relationships(project_id)
+            logger.info(f"Module relationships extracted in {time.time() - relationship_start:.2f}s")
+        except Exception as e:
+            logger.error(f"Error extracting module relationships: {e}")
         
+        logger.info(f"Codebase analysis complete: {stats['files_processed']} files processed")
         return stats
-    
+
     def _process_file(self, file_path: str, content: str, language: str, project_id: str) -> Dict[str, int]:
         """
         Process a single file and extract knowledge.
@@ -157,6 +204,9 @@ class CodebaseAnalyzer:
         Returns:
             Statistics for this file
         """
+        start_time = time.time()
+        logger.info(f"Processing file: {file_path} (language: {language})")
+        
         file_stats = {
             "entities": 0,
             "relationships": 0,
@@ -175,20 +225,10 @@ class CodebaseAnalyzer:
             }
         }
         
-        with self.knowledge_graph.driver.session() as session:
-            # Check if file entity already exists
-            result = session.run(
-                """
-                MATCH (f:Entity {id: $id, project_id: $project_id})
-                RETURN count(f) as count
-                """,
-                id=file_entity["id"],
-                project_id=project_id
-            )
-    
-            if result.single()["count"] == 0:
-                # Entity doesn't exist, so create it
-                print(f"Creating entity {file_path}")
+        # Store in knowledge graph
+        logger.info(f"Creating file entity in graph database: {os.path.basename(file_path)}")
+        try:
+            with self.knowledge_graph.driver.session() as session:
                 session.run(
                     """
                     MATCH (p:Project {id: $project_id})
@@ -205,14 +245,18 @@ class CodebaseAnalyzer:
                     name=file_entity["name"],
                     properties=file_entity["properties"]
                 )
-            else:
-                print(f"Skipping entity ${file_path}")
-
+            logger.info(f"Successfully created file entity in Neo4j: {os.path.basename(file_path)}")
+        except Exception as e:
+            logger.error(f"Error creating file entity in Neo4j: {e}")
+            raise
+        
         file_stats["entities"] += 1
         
         # Extract knowledge based on language
+        logger.info(f"Extracting knowledge from {os.path.basename(file_path)} as {language}")
         knowledge = {}
         
+        extraction_start = time.time()
         if language == "python":
             knowledge = self._extract_from_python(content, file_path)
         elif language in ["javascript", "typescript", "jsx", "tsx"]:
@@ -223,34 +267,60 @@ class CodebaseAnalyzer:
             # Use generic extraction for other languages
             knowledge = self._extract_generic(content, file_path)
         
+        extraction_time = time.time() - extraction_start
+        logger.info(f"Knowledge extraction completed in {extraction_time:.2f}s for {os.path.basename(file_path)}")
+        logger.info(f"Found {len(knowledge.get('entities', []))} entities, {len(knowledge.get('relationships', []))} relationships")
+        
         # Link entities to this file
-        for entity in knowledge.get("entities", []):
-            entity_id = entity.get("id")
-            
-            if entity_id:
-                with self.knowledge_graph.driver.session() as session:
-                    session.run(
-                        """
-                        MATCH (f:Entity {id: $file_id, project_id: $project_id})
-                        MATCH (e:Entity {id: $entity_id, project_id: $project_id})
-                        MERGE (e)-[:DEFINED_IN]->(f)
-                        """,
-                        file_id=file_entity["id"],
-                        entity_id=entity_id,
-                        project_id=project_id
-                    )
+        if knowledge.get("entities"):
+            logger.info(f"Linking {len(knowledge.get('entities', []))} entities to file {os.path.basename(file_path)}")
+            for entity in knowledge.get("entities", []):
+                entity_id = entity.get("id")
+                
+                if entity_id:
+                    try:
+                        with self.knowledge_graph.driver.session() as session:
+                            session.run(
+                                """
+                                MATCH (f:Entity {id: $file_id, project_id: $project_id})
+                                MATCH (e:Entity {id: $entity_id, project_id: $project_id})
+                                MERGE (e)-[:DEFINED_IN]->(f)
+                                """,
+                                file_id=file_entity["id"],
+                                entity_id=entity_id,
+                                project_id=project_id
+                            )
+                    except Exception as e:
+                        logger.error(f"Error linking entity {entity.get('name')} to file: {e}")
         
         # Store in knowledge graph
-        self.knowledge_graph.store(knowledge, project_id)
+        logger.info(f"Storing extracted knowledge in graph database for {os.path.basename(file_path)}")
+        graph_start = time.time()
+        try:
+            self.knowledge_graph.store(knowledge, project_id)
+            logger.info(f"Knowledge stored in graph database in {time.time() - graph_start:.2f}s")
+        except Exception as e:
+            logger.error(f"Error storing knowledge in graph database: {e}")
+            raise
         
         # Store in vector store for semantic search
-        self.vector_store.store(content, [], project_id)
+        logger.info(f"Storing content in vector store for {os.path.basename(file_path)}")
+        vector_start = time.time()
+        try:
+            self.vector_store.store(content, [], project_id)
+            logger.info(f"Content stored in vector store in {time.time() - vector_start:.2f}s")
+        except Exception as e:
+            logger.error(f"Error storing content in vector store: {e}")
+            raise
         
         # Update statistics
         file_stats["entities"] += len(knowledge.get("entities", []))
         file_stats["relationships"] += len(knowledge.get("relationships", []))
         file_stats["decisions"] += len(knowledge.get("decisions", []))
         file_stats["patterns"] += len(knowledge.get("patterns", []))
+        
+        total_time = time.time() - start_time
+        logger.info(f"Completed processing {os.path.basename(file_path)} in {total_time:.2f}s")
         
         return file_stats
     

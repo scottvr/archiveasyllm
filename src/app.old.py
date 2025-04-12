@@ -11,11 +11,6 @@ from archiveasy.analyzer.consistency import ConsistencyChecker
 from archiveasy.models.chat import Chat, Message
 from archiveasy.models.project import Project
 from archiveasy.api.routes import api_bp, init_api
-
-# Import security components
-from archiveasy.security.package_validator import create_validator
-from archiveasy.security.code_scanner import scan_artifacts, scan_message
-
 import config
 
 app = Flask(__name__, 
@@ -35,13 +30,6 @@ app.config['llm_client'] = llm_client
 app.config['knowledge_graph'] = knowledge_graph
 app.config['vector_store'] = vector_store
 app.config['consistency_checker'] = consistency_checker
-
-# Initialize security components
-package_validator = create_validator(
-    mode=config.security_config["package_validation"]["mode"],
-    whitelist_path=config.security_config["package_validation"]["whitelist_path"]
-)
-app.config['package_validator'] = package_validator
 
 # Register API blueprint
 app.register_blueprint(api_bp)
@@ -126,7 +114,6 @@ def view_project(project_id):
 
 @app.route('/project/<project_id>/delete', methods=['POST'])
 def delete_project(project_id):
-    """Delete a project."""
     # Delete vector index
     vector_store.delete_project(project_id)
 
@@ -167,7 +154,6 @@ def view_chat(chat_id):
 
 @app.route('/chat/<chat_id>/delete', methods=['POST'])
 def delete_chat(chat_id):
-    """Delete a chat."""
     # Get the project ID for redirect
     chat = get_chat(chat_id)
     project_id = chat["project_id"]
@@ -212,31 +198,6 @@ def send_message():
     
     # Check for consistency with existing knowledge
     consistency_issues = consistency_checker.check(response, project_id)
-    
-    # NEW: Scan response for security issues
-    project_config = config.get_merged_config(project_id, chat_id)
-    security_config = project_config.get('security', {})
-    
-    if security_config.get('scan_generated_code', True):
-        # Scan message text
-        message_issues = scan_message(
-            response, 
-            mode=security_config.get('package_validation', 'verify')
-        )
-        
-        # Scan artifacts
-        artifact_issues = scan_artifacts(
-            artifacts, 
-            mode=security_config.get('package_validation', 'verify')
-        )
-        
-        # Combine security issues with consistency issues
-        for issue in message_issues + artifact_issues:
-            consistency_issues.append({
-                "type": "security_issue",
-                "severity": issue.get("severity", "warning"),
-                "message": f"Security issue in generated code: {issue.get('message', '')} - {issue.get('package', '')} at line {issue.get('line', 'unknown')}"
-            })
     
     # Extract and store new knowledge
     _extract_and_store_knowledge(response, artifacts, project_id)
@@ -311,32 +272,6 @@ def analyze_codebase(project_id):
         
         config.save_project_config(project_id, project_config)
         
-        # NEW: Analyze codebase dependencies for security issues
-        try:
-            from archiveasy.security.requirements_analyzer import analyze_project_dependencies
-            
-            security_results = analyze_project_dependencies(
-                project_path=codebase_path,
-                mode=config.security_config["package_validation"]["mode"],
-                whitelist_path=config.security_config["package_validation"]["whitelist_path"],
-                save_report=True
-            )
-            
-            # Add security results to stats
-            stats["security"] = {
-                "packages_analyzed": len(security_results["packages"]["imports"]) + len(security_results["packages"]["requirements"]),
-                "issues_found": len(security_results["packages"]["invalid"]),
-                "issues": security_results["packages"]["invalid"]
-            }
-            
-            # Update config with security results
-            project_config["codebase"]["security"] = stats["security"]
-            config.save_project_config(project_id, project_config)
-            
-        except Exception as security_e:
-            app.logger.error(f"Error analyzing codebase dependencies: {security_e}")
-            # Don't fail the overall process if security scanning fails
-        
         return jsonify({
             "success": True, 
             "stats": stats,
@@ -349,6 +284,7 @@ def analyze_codebase(project_id):
 
 @app.route('/api/project/<project_id>/knowledge/<knowledge_type>', methods=['GET'])
 def get_knowledge(project_id, knowledge_type):
+                    })
     """
     Get knowledge elements from the knowledge graph.
     
@@ -408,7 +344,6 @@ def get_knowledge(project_id, knowledge_type):
                         "name": record["name"],
                         "description": record["description"],
                         "examples": record["examples"] if record["examples"] else []
-                    })
                 
                 return jsonify(patterns)
                 
@@ -466,28 +401,6 @@ def get_knowledge(project_id, knowledge_type):
                     })
                 
                 return jsonify(relationships)
-                
-        # NEW: Add a security endpoint for package motivations
-        elif knowledge_type == 'dependencies':
-            # Get project codebase path
-            project_config = config.load_project_config(project_id)
-            codebase_path = project_config.get("codebase", {}).get("path", "")
-            
-            if not codebase_path or not os.path.isdir(codebase_path):
-                return jsonify({"error": "No valid codebase path found for project"}), 400
-            
-            # Run dependency analysis
-            from archiveasy.security.requirements_analyzer import analyze_project_dependencies
-            
-            results = analyze_project_dependencies(
-                project_path=codebase_path,
-                mode=config.security_config["package_validation"]["mode"],
-                whitelist_path=config.security_config["package_validation"]["whitelist_path"],
-                save_report=False
-            )
-            
-            return jsonify(results["packages"])
-            
         else:
             return jsonify({"error": f"Unsupported knowledge type: {knowledge_type}"}), 400
             
@@ -525,19 +438,9 @@ def update_project_settings(project_id):
                 project_config['memory'] = {}
                 
             project_config['memory'].update(data['settings']['memory'])
-        
-        # NEW: Update security settings
-        if 'security' in data['settings']:
-            if not project_config:
-                project_config = {}
             
-            if 'security' not in project_config:
-                project_config['security'] = {}
-                
-            project_config['security'].update(data['settings']['security'])
-            
-        # Save updated config
-        config.save_project_config(project_id, project_config)
+            # Save updated config
+            config.save_project_config(project_id, project_config)
     
     return jsonify({"success": True})
 

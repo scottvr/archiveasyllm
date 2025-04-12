@@ -17,7 +17,8 @@ class KnowledgeGraph:
     code patterns, and reasoning.
     """
     
-    def __init__(self, uri: str, username: Optional[str] = None, password: Optional[str] = None):
+    def __init__(self, uri: str, username: Optional[str] = None, password: Optional[str] = None, 
+                 connection_timeout: int = 30, connection_acquisition_timeout: int = 60):
         """
         Initialize the knowledge graph connection.
         
@@ -25,20 +26,43 @@ class KnowledgeGraph:
             uri: Neo4j database URI
             username: Optional database username
             password: Optional database password
+            connection_timeout: Timeout for Neo4j connections in seconds
+            connection_acquisition_timeout: Timeout for Neo4j connection acquisition in seconds
         """
         self.uri = uri
         auth = (username, password) if username and password else None
         
         try:
-            self.driver = GraphDatabase.driver(uri, auth=auth)
-            # Test connection
+            import time
+            start_time = time.time()
+            logger.info(f"Connecting to Neo4j at {uri}")
+            
+            # Configure driver with timeouts to prevent hanging
+            self.driver = GraphDatabase.driver(
+                uri, 
+                auth=auth,
+                connection_timeout=connection_timeout,
+                connection_acquisition_timeout=connection_acquisition_timeout,
+                max_connection_lifetime=3600  # 1 hour max connection lifetime
+            )
+            
+            # Test connection with timeout
             with self.driver.session() as session:
-                session.run("RETURN 1")
-            logger.info(f"Successfully connected to Neo4j at {uri}")
+                logger.info("Testing Neo4j connection...")
+                result = session.run("RETURN 1 as n")
+                test_value = result.single()["n"]
+                if test_value != 1:
+                    raise Exception("Unexpected test result from Neo4j")
+            
+            connect_time = time.time() - start_time
+            logger.info(f"Successfully connected to Neo4j in {connect_time:.2f}s")
         except Exception as e:
             logger.error(f"Error connecting to Neo4j: {e}")
+            logger.error("Check that Neo4j is running and accessible")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
-    
+
     def init_schema(self):
         """
         Initialize the database schema with constraints and indexes.
@@ -101,7 +125,11 @@ class KnowledgeGraph:
             knowledge: Dictionary containing extracted knowledge
             project_id: Project identifier
         """
+        import time
+        start_time = time.time()
+        
         if not knowledge:
+            logger.info("No knowledge to store, skipping")
             return
             
         entities = knowledge.get("entities", [])
@@ -109,30 +137,54 @@ class KnowledgeGraph:
         decisions = knowledge.get("decisions", [])
         patterns = knowledge.get("patterns", [])
         
-        logger.info(f"Storing {len(entities)} entities, {len(relationships)} relationships, "
+        logger.info(f"Storing in Neo4j: {len(entities)} entities, {len(relationships)} relationships, "
                    f"{len(decisions)} decisions, and {len(patterns)} patterns for project {project_id}")
         
         try:
             with self.driver.session() as session:
                 # Store entities (functions, classes, variables, etc.)
-                for entity in entities:
-                    self._store_entity(session, entity, project_id)
+                if entities:
+                    entity_start = time.time()
+                    logger.info(f"Storing {len(entities)} entities in Neo4j")
+                    for i, entity in enumerate(entities):
+                        if i % 10 == 0 and i > 0:  # Log progress for larger batches
+                            logger.info(f"Stored {i}/{len(entities)} entities")
+                        self._store_entity(session, entity, project_id)
+                    logger.info(f"All entities stored in {time.time() - entity_start:.2f}s")
                 
                 # Store relationships between entities
-                for rel in relationships:
-                    self._store_relationship(session, rel, project_id)
+                if relationships:
+                    rel_start = time.time()
+                    logger.info(f"Storing {len(relationships)} relationships in Neo4j")
+                    for i, rel in enumerate(relationships):
+                        if i % 10 == 0 and i > 0:  # Log progress for larger batches
+                            logger.info(f"Stored {i}/{len(relationships)} relationships")
+                        self._store_relationship(session, rel, project_id)
+                    logger.info(f"All relationships stored in {time.time() - rel_start:.2f}s")
                 
                 # Store architectural decisions
-                for decision in decisions:
-                    self._store_decision(session, decision, project_id)
+                if decisions:
+                    decision_start = time.time()
+                    logger.info(f"Storing {len(decisions)} architectural decisions in Neo4j")
+                    for decision in decisions:
+                        self._store_decision(session, decision, project_id)
+                    logger.info(f"All decisions stored in {time.time() - decision_start:.2f}s")
                 
                 # Store design patterns
-                for pattern in patterns:
-                    self._store_pattern(session, pattern, project_id)
+                if patterns:
+                    pattern_start = time.time()
+                    logger.info(f"Storing {len(patterns)} design patterns in Neo4j")
+                    for pattern in patterns:
+                        self._store_pattern(session, pattern, project_id)
+                    logger.info(f"All patterns stored in {time.time() - pattern_start:.2f}s")
+            
+            logger.info(f"All knowledge stored in Neo4j in {time.time() - start_time:.2f}s")
+            
         except Exception as e:
-            logger.error(f"Error storing knowledge: {e}")
+            logger.error(f"Error storing knowledge in Neo4j: {e}")
+            logger.error(f"Exception details: {str(e)}")
             raise
-    
+
     def _store_entity(self, session, entity: Dict[str, Any], project_id: str) -> None:
         """Store a code entity in the graph."""
         entity_id = entity.get("id", str(uuid.uuid4()))

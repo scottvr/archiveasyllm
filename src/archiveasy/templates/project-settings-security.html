@@ -1,0 +1,201 @@
+<!-- Security Settings Tab for Project Settings Modal -->
+<div class="tab-pane fade" id="securitySettings" role="tabpanel" aria-labelledby="security-tab">
+  <h6 class="mt-3">Package Security Settings</h6>
+  <div class="form-check form-switch mb-2">
+    <input class="form-check-input" type="checkbox" id="scanGeneratedCode" checked>
+    <label class="form-check-label" for="scanGeneratedCode">Scan generated code for unsafe packages</label>
+  </div>
+  
+  <div class="mb-3">
+    <label for="packageValidationMode" class="form-label">Package Validation Mode</label>
+    <select class="form-select" id="packageValidationMode">
+      <option value="verify">Verify (Check against PyPI)</option>
+      <option value="whitelist">Whitelist (Strict mode, only allow approved packages)</option>
+    </select>
+    <div class="form-text">
+      'Verify' mode checks packages against PyPI repository.<br>
+      'Whitelist' mode only allows pre-approved packages.
+    </div>
+  </div>
+
+  <h6 class="mt-4">Dependency Analysis</h6>
+  <p>Scan codebase for potential slopsquatting vulnerabilities</p>
+  <button type="button" class="btn btn-outline-primary mb-3" id="analyzeDependenciesBtn">
+    <i class="bi bi-shield-check"></i> Analyze Dependencies
+  </button>
+  
+  <div id="dependencyResults" style="display: none;">
+    <h6>Analysis Results</h6>
+    <div class="alert alert-info" role="alert">
+      Scan codebase for potential slopsquatting vulnerabilities
+    </div>
+    <div class="dependency-list mt-3">
+      <div id="dependencyAnalysisContent">
+        <!-- Results will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Dependency Analysis -->
+<script>
+  // This script will be added to the project settings page
+  document.addEventListener('DOMContentLoaded', function() {
+    const analyzeDependenciesBtn = document.getElementById('analyzeDependenciesBtn');
+    const dependencyResults = document.getElementById('dependencyResults');
+    const dependencyAnalysisContent = document.getElementById('dependencyAnalysisContent');
+    
+    // Handle dependency analysis
+    if (analyzeDependenciesBtn) {
+      analyzeDependenciesBtn.addEventListener('click', async function() {
+        // Show loading state
+        analyzeDependenciesBtn.disabled = true;
+        analyzeDependenciesBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing...';
+        
+        try {
+          // Fetch dependencies data
+          const response = await fetch(`/api/project/{{ project.id }}/knowledge/dependencies`);
+          
+          if (!response.ok) {
+            throw new Error('Failed to analyze dependencies');
+          }
+          
+          const data = await response.json();
+          
+          // Process and display results
+          let html = '';
+          
+          // Show imports
+          if (data.imports && data.imports.length > 0) {
+            html += '<h6>Imported Packages</h6>';
+            html += '<ul class="list-group mb-3">';
+            data.imports.forEach(pkg => {
+              html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${pkg}
+                        <span class="badge bg-primary rounded-pill">import</span>
+                      </li>`;
+            });
+            html += '</ul>';
+          }
+          
+          // Show requirements
+          if (data.requirements && data.requirements.length > 0) {
+            html += '<h6>Requirements</h6>';
+            html += '<ul class="list-group mb-3">';
+            data.requirements.forEach(pkg => {
+              html += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                        ${pkg}
+                        <span class="badge bg-secondary rounded-pill">requirement</span>
+                      </li>`;
+            });
+            html += '</ul>';
+          }
+          
+          // Show invalid packages
+          if (data.invalid && data.invalid.length > 0) {
+            html += '<h6>Potentially Harmful Packages</h6>';
+            html += '<div class="alert alert-danger">';
+            html += '<p><strong>Warning:</strong> The following packages may be harmful or non-existent:</p>';
+            html += '<ul class="list-group mb-3">';
+            data.invalid.forEach(pkg => {
+              html += `<li class="list-group-item list-group-item-danger">
+                        <strong>${pkg.name}</strong> (${pkg.type})<br>
+                        <small>${pkg.error}</small><br>
+                        <small class="text-muted">Source: ${pkg.source}</small>
+                      </li>`;
+            });
+            html += '</ul>';
+            html += '</div>';
+          }
+          
+          // Show package motivations if available
+          if (data.motivations) {
+            html += '<h6>Package Motivations</h6>';
+            html += '<ul class="list-group mb-3">';
+            for (const [pkg, motivation] of Object.entries(data.motivations)) {
+              html += `<li class="list-group-item">
+                        <strong>${pkg}</strong><br>
+                        <small>${motivation.motivation || 'Unknown purpose'}</small>
+                      </li>`;
+            }
+            html += '</ul>';
+          }
+          
+          // Display the results
+          dependencyAnalysisContent.innerHTML = html;
+          dependencyResults.style.display = 'block';
+          
+        } catch (error) {
+          console.error('Error:', error);
+          dependencyAnalysisContent.innerHTML = `
+            <div class="alert alert-danger">
+              Error analyzing dependencies: ${error.message}
+            </div>
+          `;
+          dependencyResults.style.display = 'block';
+        } finally {
+          // Reset button
+          analyzeDependenciesBtn.disabled = false;
+          analyzeDependenciesBtn.innerHTML = '<i class="bi bi-shield-check"></i> Analyze Dependencies';
+        }
+      });
+    }
+    
+    // Save security settings when saving project settings
+    const saveProjectSettingsBtn = document.getElementById('saveProjectSettingsBtn');
+    if (saveProjectSettingsBtn) {
+      const originalClick = saveProjectSettingsBtn.onclick;
+      
+      saveProjectSettingsBtn.onclick = function(e) {
+        // Get security settings
+        const securitySettings = {
+          scan_generated_code: document.getElementById('scanGeneratedCode').checked,
+          package_validation: document.getElementById('packageValidationMode').value
+        };
+        
+        // Add security settings to the data being sent
+        const projectSettingsForm = document.getElementById('projectSettingsForm');
+        const projectData = {
+          name: document.getElementById('projectName').value,
+          description: document.getElementById('projectDescription').value,
+          settings: {
+            memory: {
+              extract_patterns: document.getElementById('extractPatterns').checked,
+              extract_decisions: document.getElementById('extractDecisions').checked,
+              consistency_checking: document.getElementById('consistencyChecking').checked
+            },
+            security: securitySettings
+          }
+        };
+        
+        // Send the updated settings
+        fetch(`/api/project/{{ project.id }}/settings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(projectData)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to save settings');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Close modal and reload
+          const modal = bootstrap.Modal.getInstance(document.getElementById('projectSettingsModal'));
+          modal.hide();
+          window.location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An error occurred while saving settings');
+        });
+        
+        // Prevent default behavior
+        e.preventDefault();
+      };
+    }
+  });
+</script>

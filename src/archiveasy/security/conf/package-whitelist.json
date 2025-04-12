@@ -1,0 +1,62 @@
+{
+  "flask": {
+    "purpose": "Web microframework",
+    "pypi_url": "https://pypi.org/project/Flask/"
+  },
+  "gunicorn": {
+    "purpose": "WSGI HTTP server",
+    "pypi_url": "https://pypi.org/project/gunicorn/"
+  },
+  "flask-restx": {
+    "purpose": "Flask REST API framework",
+    "pypi_url": "https://pypi.org/project/flask-restx/"
+  },
+  "neo4j": {
+    "purpose": "Neo4j graph database driver",
+    "pypi_url": "https://pypi.org/project/neo4j/"
+  },
+  "faiss-cpu": {
+    "purpose": "Efficient similarity search",
+    "pypi_url": "https://pypi.org/project/faiss-cpu/"
+  },
+  "sentence-transformers": {
+    "purpose": "Sentence embeddings",
+    "pypi_url": "https://pypi.org/project/sentence-transformers/"
+  },
+  "anthropic": {
+    "purpose": "Anthropic Claude API client",
+    "pypi_url": "https://pypi.org/project/anthropic/"
+  },
+  "openai": {
+    "purpose": "OpenAI API client",
+    "pypi_url": "https://pypi.org/project/openai/"
+  },
+  "numpy": {
+    "purpose": "Scientific computing",
+    "pypi_url": "https://pypi.org/project/numpy/"
+  },
+  "pandas": {
+    "purpose": "Data analysis and manipulation",
+    "pypi_url": "https://pypi.org/project/pandas/"
+  },
+  "python-dotenv": {
+    "purpose": "Environment variable handling",
+    "pypi_url": "https://pypi.org/project/python-dotenv/"
+  },
+  "pydantic": {
+    "purpose": "Data validation",
+    "pypi_url": "https://pypi.org/project/pydantic/"
+  },
+  "rich": {
+    "purpose": "Rich text formatting",
+    "pypi_url": "https://pypi.org/project/rich/"
+  },
+  "requests": {
+    "purpose": "HTTP library",
+    "pypi_url": "https://pypi.org/project/requests/"
+  },
+  "pytest": {
+    "purpose": "Testing framework",
+    "pypi_url": "https://pypi.org/project/pytest/"
+  }
+}

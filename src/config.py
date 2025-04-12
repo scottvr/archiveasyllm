@@ -11,9 +11,9 @@ Configuration is loaded from:
 """
 import os
 import json
+import datetime
 from typing import Dict, Any, List, Optional
 from pathlib import Path
-from datetime import datetime
 
 # Load .env file if available
 try:
@@ -69,6 +69,21 @@ api_config = {
     "api_key": os.environ.get("API_KEY", "dev-api-key"),
 }
 
+# Security configuration (NEW)
+security_config = {
+    "package_validation": {
+        "mode": os.environ.get("PACKAGE_VALIDATION_MODE", "verify"),  # 'whitelist' or 'verify'
+        "whitelist_path": os.environ.get("PACKAGE_WHITELIST_PATH", 
+                          str(Path(__file__).parent / "archiveasy" / "security" / "conf" / "package_whitelist.json")),
+        "enabled": os.environ.get("ENABLE_PACKAGE_VALIDATION", "True").lower() == "true"
+    },
+    "code_scanning": {
+        "enabled": os.environ.get("ENABLE_CODE_SCANNING", "True").lower() == "true",
+        "scan_imports": os.environ.get("SCAN_IMPORTS", "True").lower() == "true",
+        "scan_requirements": os.environ.get("SCAN_REQUIREMENTS", "True").lower() == "true"
+    }
+}
+
 # Load project-specific configurations
 def load_project_config(project_id: str) -> Dict[str, Any]:
     """
@@ -101,6 +116,10 @@ def load_project_config(project_id: str) -> Dict[str, Any]:
             "extract_decisions": True,
             "extract_entities": True,
             "consistency_checking": True
+        },
+        "security": {  # NEW
+            "package_validation": security_config["package_validation"]["mode"],
+            "scan_generated_code": True
         }
     }
 
@@ -134,6 +153,9 @@ def load_chat_config(chat_id: str) -> Dict[str, Any]:
             "use_project_context": True,
             "use_chat_history": True,
             "include_artifacts_in_context": True
+        },
+        "security": {  # NEW
+            "scan_generated_code": True
         }
     }
 
@@ -206,7 +228,8 @@ def get_merged_config(project_id: Optional[str] = None, chat_id: Optional[str] =
         },
         "vector_db": vector_db_config.copy(),
         "app": app_config.copy(),
-        "api": api_config.copy()
+        "api": api_config.copy(),
+        "security": security_config.copy()  # NEW
     }
     
     # Add project config if provided
@@ -220,6 +243,18 @@ def get_merged_config(project_id: Optional[str] = None, chat_id: Optional[str] =
         # Merge memory config
         if "memory" in project_config:
             merged["memory"] = project_config["memory"]
+        
+        # Merge security config (NEW)
+        if "security" in project_config:
+            if "security" not in merged:
+                merged["security"] = {}
+            for key, section in project_config["security"].items():
+                if key not in merged["security"]:
+                    merged["security"][key] = {}
+                if isinstance(section, dict):
+                    merged["security"][key].update(section)
+                else:
+                    merged["security"][key] = section
     
     # Add chat config if provided
     if chat_id:
@@ -234,6 +269,18 @@ def get_merged_config(project_id: Optional[str] = None, chat_id: Optional[str] =
             if "memory" not in merged:
                 merged["memory"] = {}
             merged["memory"].update(chat_config["memory"])
+        
+        # Merge security config (NEW)
+        if "security" in chat_config:
+            if "security" not in merged:
+                merged["security"] = {}
+            for key, section in chat_config["security"].items():
+                if key not in merged["security"]:
+                    merged["security"][key] = {}
+                if isinstance(section, dict):
+                    merged["security"][key].update(section)
+                else:
+                    merged["security"][key] = section
     
     return merged
 
